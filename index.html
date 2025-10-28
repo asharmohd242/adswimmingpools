@@ -464,6 +464,12 @@
         </div>
     </div>
 </form>
+
+<!-- Success Message (ADD THIS!) -->
+<p class="contact_success_box" style="display:none; color: #28a745; margin-top: 15px; padding: 15px; background: #d4edda; border: 1px solid #c3e6cb; border-radius: 5px;">
+    ✓ We received your message and you will hear from us soon. Thank You!
+</p>
+
 <script>
 document.getElementById('contact-form').addEventListener('submit', async function(e) {
     e.preventDefault();
@@ -493,7 +499,8 @@ document.getElementById('contact-form').addEventListener('submit', async functio
             setTimeout(() => {
                 button.disabled = false;
                 button.textContent = 'Send Message';
-            }, 3000);
+                successBox.style.display = 'none';
+            }, 5000);
         } else {
             throw new Error('Form submission failed');
         }
