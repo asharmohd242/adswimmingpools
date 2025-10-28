@@ -468,10 +468,12 @@
                                     </div>
                                 </div>
                                 <div class="col-12">
-                                    <button class="btn btn-primary rounded-pill py-3 px-5" type="submit">Send Message</button>
+                                    <button class="btn btn-primary rounded-pill py-3 px-5" id="submit-btn" type="submit">Send Message</button>
                                 </div>
                             </div>
+                             <p id="form-status" style="margin-top:10px; font-weight:500;"></p>
                         </form>
+
                         <p class="contact_success_box" style="display:none;">We received your message and you will hear from us soon. Thank You!</p>
                     </div>
                 </div>
@@ -548,45 +550,47 @@
 
     <!-- Template Javascript -->
     <script src="js/main.js"></script>
-   <script>
-document.addEventListener("DOMContentLoaded", function () {
-  const form = document.getElementById("contact-form");
-  const button = form.querySelector('button[type="submit"]');
-  const successBox = document.querySelector(".contact_success_box");
-  const formspreeURL = form.getAttribute("action"); // store the URL manually
+    <script>
+    const form = document.getElementById("contact-form");
+    const status = document.getElementById("form-status");
+    const submitBtn = document.getElementById("submit-btn");
+    let lastSubmission = 0;
 
-  // Remove the action attribute to stop browser auto-post
-  form.removeAttribute("action");
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
 
-  form.addEventListener("submit", async function (e) {
-    e.preventDefault(); // stop normal HTML submission
-
-    button.disabled = true;
-    button.textContent = "Sending...";
-
-    try {
-      const response = await fetch(formspreeURL, {
-        method: "POST",
-        body: new FormData(form),
-        headers: { "Accept": "application/json" }
-      });
-
-      if (response.ok) {
-        form.reset();
-        successBox.style.display = "block"; // show inline success message
-      } else {
-        alert("❌ There was a problem sending your message. Please try again.");
+      const now = Date.now();
+      if (now - lastSubmission < 10000) {
+        status.innerHTML = "⚠️ Please wait a few seconds before submitting again.";
+        return;
       }
-    } catch (error) {
-      alert("⚠️ Network error. Please check your connection and try again.");
-    } finally {
-      button.disabled = false;
-      button.textContent = "Send Message";
-      setTimeout(() => (successBox.style.display = "none"), 5000);
-    }
-  });
-});
-</script>
+      lastSubmission = now;
+
+      submitBtn.disabled = true;
+      submitBtn.innerText = "Sending...";
+
+
+      try {
+        const response = await fetch(form.action, {
+          method: form.method,
+          body: new FormData(form),
+          headers: { 'Accept': 'application/json' }
+        });
+
+        if (response.ok) {
+          status.innerHTML = "✅ Thank you! Your message has been sent successfully.";
+          form.reset();
+        } else {
+          status.innerHTML = "❌ Oops! There was a problem submitting your form.";
+        }
+      } catch (error) {
+        status.innerHTML = "❌ Network error. Please try again later.";
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.innerText = "Send Message";
+      }
+    });
+  </script>
 
 </body>
 
