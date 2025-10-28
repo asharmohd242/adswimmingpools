@@ -548,53 +548,46 @@
 
     <!-- Template Javascript -->
     <script src="js/main.js"></script>
-    <script>
-document.getElementById('contact-form').addEventListener('submit', async function(e) {
-    e.preventDefault();
-    
-    const form = e.target;
-    const formData = new FormData(form);
-    const button = form.querySelector('button[type="submit"]');
-    const successBox = document.querySelector('.contact_success_box');
-    
-    // Disable button during submission
+   <script>
+document.addEventListener("DOMContentLoaded", function () {
+  const form = document.getElementById("contact-form");
+  const button = form.querySelector('button[type="submit"]');
+  const successBox = document.querySelector(".contact_success_box");
+  const formspreeURL = form.getAttribute("action"); // store the URL manually
+
+  // Remove the action attribute to stop browser auto-post
+  form.removeAttribute("action");
+
+  form.addEventListener("submit", async function (e) {
+    e.preventDefault(); // stop normal HTML submission
+
     button.disabled = true;
-    button.textContent = 'Sending...';
-    
+    button.textContent = "Sending...";
+
     try {
-        const response = await fetch(form.action, {
-            method: 'POST',
-            body: formData,
-            headers: {
-                'Accept': 'application/json'  // This tells Formspree to return JSON instead of redirecting
-            }
-        });
-        
-        if (response.ok) {
-            // Success!
-            successBox.style.display = 'block';
-            form.reset();
-            button.textContent = 'Sent!';
-            
-            // Hide success message and reset button after 5 seconds
-            setTimeout(() => {
-                successBox.style.display = 'none';
-                button.disabled = false;
-                button.textContent = 'Send Message';
-            }, 5000);
-        } else {
-            // Formspree returned an error
-            const data = await response.json();
-            throw new Error(data.error || 'Form submission failed');
-        }
+      const response = await fetch(formspreeURL, {
+        method: "POST",
+        body: new FormData(form),
+        headers: { "Accept": "application/json" }
+      });
+
+      if (response.ok) {
+        form.reset();
+        successBox.style.display = "block"; // show inline success message
+      } else {
+        alert("❌ There was a problem sending your message. Please try again.");
+      }
     } catch (error) {
-        console.error('Error:', error);
-        alert('Oops! There was a problem submitting your form. Please try again.');
-        button.disabled = false;
-        button.textContent = 'Send Message';
+      alert("⚠️ Network error. Please check your connection and try again.");
+    } finally {
+      button.disabled = false;
+      button.textContent = "Send Message";
+      setTimeout(() => (successBox.style.display = "none"), 5000);
     }
+  });
 });
 </script>
+
 </body>
 
 </html>
