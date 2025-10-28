@@ -488,7 +488,7 @@
                     <div class="col-md-6 col-lg-4">
                         <p class="section-title text-white h5 mb-4">Address<span></span></p>
                         <p><i class="fa fa-map-marker-alt me-3"></i>Khalidiyah Towers, Abu Dhabi, UAE</p>
-                        <a href="https://wa.me/971562229196" target="_blank" style="color: inherit; text-decoration: underline;">
+                        <a href="https://wa.me/971562229196" target="_blank" style="color: inherit; text-decoration: underline; color: inherit;">
                          <p><i class="fa fa-phone-alt me-3"></i>+971 56 222 9196</p>
                         </a>
                         <p><i class="fa fa-envelope me-3"></i>info@adswimmingpool.com</p>
@@ -549,44 +549,52 @@
     <!-- Template Javascript -->
     <script src="js/main.js"></script>
     <script>
-document.addEventListener('DOMContentLoaded', function() {
-    const form = document.getElementById('contact-form');
+document.getElementById('contact-form').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const form = e.target;
+    const formData = new FormData(form);
     const button = form.querySelector('button[type="submit"]');
     const successBox = document.querySelector('.contact_success_box');
-
-    form.addEventListener('submit', async function(e) {
-        e.preventDefault(); // stop normal submission
-        button.disabled = true;
-        button.textContent = 'Sending...';
-
-        try {
-            const response = await fetch(form.action, {
-                method: 'POST',
-                body: new FormData(form),
-                headers: { 'Accept': 'application/json' }
-            });
-
-            if (response.ok) {
-                successBox.style.display = 'block';
-                form.reset();
-                button.textContent = 'Sent!';
-                alert('✅ Thank you! Your message has been sent successfully.');
-            } else {
-                alert('❌ There was a problem sending your message. Please try again.');
+    
+    // Disable button during submission
+    button.disabled = true;
+    button.textContent = 'Sending...';
+    
+    try {
+        const response = await fetch(form.action, {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'Accept': 'application/json'  // This tells Formspree to return JSON instead of redirecting
             }
-        } catch (error) {
-            alert('⚠️ Network error. Please try again later.');
-        } finally {
+        });
+        
+        if (response.ok) {
+            // Success!
+            successBox.style.display = 'block';
+            form.reset();
+            button.textContent = 'Sent!';
+            
+            // Hide success message and reset button after 5 seconds
             setTimeout(() => {
+                successBox.style.display = 'none';
                 button.disabled = false;
                 button.textContent = 'Send Message';
-                successBox.style.display = 'none';
-            }, 4000);
+            }, 5000);
+        } else {
+            // Formspree returned an error
+            const data = await response.json();
+            throw new Error(data.error || 'Form submission failed');
         }
-    });
+    } catch (error) {
+        console.error('Error:', error);
+        alert('Oops! There was a problem submitting your form. Please try again.');
+        button.disabled = false;
+        button.textContent = 'Send Message';
+    }
 });
 </script>
-
 </body>
 
 </html>
