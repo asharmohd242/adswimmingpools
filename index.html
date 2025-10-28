@@ -433,7 +433,7 @@
                     </div>
                     <div class="col-lg-6 wow fadeInUp" data-wow-delay="0.5s">
 
-                        <form id="contact-form" action="forms/contact-data.php" method="post">
+                        <form id="contact-form" action="https://formspree.io/f/mgvpayqw" method="post">
                             <div class="row g-3">
                                 <div class="col-md-6">
                                     <div class="form-floating">
@@ -469,6 +469,7 @@
                 </div>
             </div>
         </div>
+
         <!-- Contact End -->
         
 
@@ -537,6 +538,53 @@
 
     <!-- Template Javascript -->
     <script src="js/main.js"></script>
+    <script>
+document.getElementById('contact-form').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const form = e.target;
+    const formData = new FormData(form);
+    const button = form.querySelector('button[type="submit"]');
+    const successBox = document.querySelector('.contact_success_box');
+    
+    // Disable button during submission
+    button.disabled = true;
+    button.textContent = 'Sending...';
+    
+    try {
+        const response = await fetch(form.action, {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'Accept': 'application/json'  // This tells Formspree to return JSON instead of redirecting
+            }
+        });
+        
+        if (response.ok) {
+            // Success!
+            successBox.style.display = 'block';
+            form.reset();
+            button.textContent = 'Sent!';
+            
+            // Hide success message and reset button after 5 seconds
+            setTimeout(() => {
+                successBox.style.display = 'none';
+                button.disabled = false;
+                button.textContent = 'Send Message';
+            }, 5000);
+        } else {
+            // Formspree returned an error
+            const data = await response.json();
+            throw new Error(data.error || 'Form submission failed');
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        alert('Oops! There was a problem submitting your form. Please try again.');
+        button.disabled = false;
+        button.textContent = 'Send Message';
+    }
+});
+</script>
 </body>
 
 </html>
